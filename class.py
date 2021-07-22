@@ -32,6 +32,7 @@ def openclass(link):
         pass
     options.add_argument('--disable-gpu')
     options.add_argument('--disable-software-rasterizer')
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_experimental_option("detach", True)
     driver = webdriver.Chrome(chrome_path, options=options)
     driver.get(link)
@@ -79,8 +80,7 @@ def openclass(link):
 
 now = datetime.datetime.now()
 day = now.strftime("%A")
-hour = int(now.strftime("%H"))
-minute = int(now.strftime("%M"))
+time = int(now.strftime("%H%M"))
 
 if args.tt:
     im = Image.open(tt)
@@ -88,7 +88,7 @@ if args.tt:
 
 else:
 
-    if hour>=8 and minute>=50 and hour <11:
+    if time>850 and time<1000:
         if day == "Monday":
             openclass(es_lab)
         elif day == "Tuesday":
@@ -100,7 +100,19 @@ else:
         if day == "Friday":
             pass
 
-    elif hour>=11 and minute>=10 and hour <12:
+    elif time>1005 and time<1105:
+        if day == "Monday":
+            openclass(es_lab)
+        elif day == "Tuesday":
+            pass
+        elif day == "Wednesday":
+            pass
+        elif day == "Thursday":
+            pass
+        if day == "Friday":
+            pass
+
+    elif time>=1115 and time<1215:
         if day == "Monday":
             pass
         elif day == "Tuesday":
@@ -108,11 +120,11 @@ else:
         elif day == "Wednesday":
             pass
         elif day == "Thursday":
-            pass
+            openclass(dbms)
         elif day == "Friday":
             openclass(ccn)
 
-    elif hour>=12 and minute>=15 and hour<13:
+    elif time>=1220 and time<1320:
         if day == "Monday":
             pass
         elif day == "Tuesday":
@@ -124,7 +136,7 @@ else:
         elif day == "Friday":
             openclass(ita)
 
-    elif hour>=14 and hour<15:
+    elif time>=1400 and time<1500:
         if day == "Monday":
             openclass(vlsi)
         elif day == "Tuesday":
@@ -136,7 +148,7 @@ else:
         elif day == "Friday":
             openclass(es)
         
-    elif hour>=15 and hour<16:
+    elif time>=1505 and time<1605:
         if day == "Monday":
             openclass(ccn)
         elif day == "Tuesday":
@@ -146,6 +158,18 @@ else:
         elif day == "Thursday":
             openclass(vlsi)
         elif day == "Friday":
+            pass
+
+    elif time>1610 and time<1710:
+        if day == "Monday":
+            pass
+        elif day == "Tuesday":
+            pass
+        elif day == "Wednesday":
+            pass
+        elif day == "Thursday":
+            pass
+        if day == "Friday":
             pass
 
     else:
