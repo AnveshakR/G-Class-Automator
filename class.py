@@ -90,24 +90,25 @@ if args.tt:
     im = Image.open(tt)
     im.show()
 
-df  = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
-df.dropna(axis=1, how="all", inplace=True)
-subjlist = df["Subject Abbreviation"].to_numpy()
+else:
+    df  = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
+    df.dropna(axis=1, how="all", inplace=True)
+    subjlist = df["Subject Abbreviation"].to_numpy()
 
-now = datetime.now()
-day = now.strftime("%A")
-time = int(now.strftime("%H%M%S"))
+    now = datetime.now()
+    day = now.strftime("%A")
+    time = int(now.strftime("%H%M%S"))
 
-times = df["Lecture start time"].to_numpy()
-link = None
-for i in range(len(times)-1):
-    if time >= int(str(times[i]).replace(":","")) and time < int(str(times[i+1]).replace(":","")):
-        link = df[day].to_numpy()[i]
-        if link is np.nan:
+    times = df["Lecture start time"].to_numpy()
+    link = None
+    for i in range(len(times)-1):
+        if time >= int(str(times[i]).replace(":","")) and time < int(str(times[i+1]).replace(":","")):
+            link = df[day].to_numpy()[i]
+            if link is np.nan:
+                break
+            openclass(df["Classroom Link"].to_numpy()[next(x for x in range(len(subjlist)) if subjlist[x]==link)])
             break
-        openclass(df["Classroom Link"].to_numpy()[next(x for x in range(len(subjlist)) if subjlist[x]==link)])
-        break
-    else:
-        pass
-if link == None or link is np.nan:
-    print("no class")
+        else:
+            pass
+    if link == None or link is np.nan:
+        print("no class")
