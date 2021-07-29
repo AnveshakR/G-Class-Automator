@@ -1,5 +1,6 @@
 from selenium import webdriver 
-from selenium.webdriver.common.by import By 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait 
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
@@ -8,27 +9,27 @@ import argparse
 import os
 import pandas
 import numpy as np
+import dataframe_image as dfi
 
 chrome_path = r"C:\Users\anves\Documents\chromedriver\chromedriver.exe"
 
-tt = r"tt.jpg"
-
 parser = argparse.ArgumentParser()
-parser.add_argument('-tt',default=False, action='store_true')
+parser.add_argument('-tt',default=False, action='store_true', help="Displays timetable")
 args = parser.parse_args()
 
 def openclass(link):
     print("Loading...")
     options = webdriver.ChromeOptions() 
     try:
-        chrome_profile = os.environ['USERPROFILE']+r"\AppData\Local\Google\Chrome\User Data\Profile 1"
+        chrome_profile = os.environ['USERPROFILE']+r"\AppData\Local\Google\Chrome\User Data\Default"
         options.add_argument("user-data-dir={}".format(chrome_profile))
     except:
         pass
     options.add_argument('--disable-gpu')
     options.add_argument('--disable-software-rasterizer')
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    options.add_argument("--headless")
+    options.add_experimental_option("detach", True)
+    
     driver = webdriver.Chrome(chrome_path, options=options)
     driver.get(link)
     wait = WebDriverWait(driver,10)
@@ -61,34 +62,34 @@ def openclass(link):
         if i.find("meet") != -1:
             break
     
-    driver.close()
+    driver.execute_script("window.open('{}');".format(i))
 
-    options = None
-    options = webdriver.ChromeOptions() 
-    try:
-        chrome_profile = os.environ['USERPROFILE']+r"\AppData\Local\Google\Chrome\User Data\Default"
-        options.add_argument("user-data-dir={}".format(chrome_profile))
-    except:
-        pass
-    options.add_argument('--disable-gpu')
-    options.add_argument('--disable-software-rasterizer')
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    options.add_experimental_option("detach", True)
-    linkopener = webdriver.Chrome(chrome_path, options=options)
-    linkopener.get(i)
-    wait = WebDriverWait(linkopener,10)
+    p = driver.current_window_handle
+
+    chwd = driver.window_handles
+
+    for w in chwd:
+
+        if(w!=p):
+            driver.switch_to.window(w)
 
     wait.until(EC.visibility_of_element_located(((By.CLASS_NAME, 'GKGgdd'))))
-    element = linkopener.find_elements_by_class_name("GKGgdd")
+    element = driver.find_elements_by_class_name("GKGgdd")
     for i in element:
         if i.find_element_by_css_selector('div').get_attribute("aria-label").find("off") != -1:
             i.click()
 
-    return linkopener
+    return driver
 
 if args.tt:
-    im = Image.open(tt)
-    im.show()
+    df  = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
+
+    df.dropna(axis=1, how="all", inplace=True)
+    df.fillna("", inplace=True)
+
+    dfi.export(df.iloc[:,0:6], "tt.png")
+
+    Image.open('tt.png').show()
 
 else:
     df  = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
