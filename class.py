@@ -82,14 +82,53 @@ def openclass(link):
     return driver
 
 if args.tt:
-    df  = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
+    df = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
 
-    df.dropna(axis=1, how="all", inplace=True)
-    df.fillna("", inplace=True)
+    df = df.iloc[:,0:6]
 
-    dfi.export(df.iloc[:,0:6], "tt.png")
+    times = df["Lecture start time"]
+    times = [int(str(i).replace(':','')) for i in times]
+
+    now = datetime.now()
+    day = now.strftime("%A")
+    hrs = int(now.strftime("%H%M%S"))
+
+    def highlight_cols(x):
+        
+        arr = x.columns.tolist()
+
+        df = x.copy()
+        
+        df.loc[:, :] = 'background-color: lightgreen; border: 2px solid black'
+
+        if day not in arr:
+            return df
+
+        df[day] = 'background-color: green; border: 2px solid black'
+
+        try:    
+            for j in range(len(times)):
+                if hrs < times[j] and df[day][j-1]:
+                    df[arr[0]][j-1] = 'background-color: cyan; border: 2px solid black'
+
+                    if x[day][j-1] != '':
+                        df[day][j-1] = 'background-color: cyan; border: 2px solid black'
+
+                    break
+            
+
+        except:
+            pass
+        
+        return df 
+
+    df.fillna("", inplace=True) 
+    
+    dfi.export(df.style.apply(highlight_cols, axis = None), "tt.png")
 
     Image.open('tt.png').show()
+
+    os.remove("tt.png")
 
 else:
     df  = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
@@ -111,5 +150,5 @@ else:
             break
         else:
             pass
-    if link == None or link is np.nan:
+    if link == None or link is np.nan:      
         print("no class")
