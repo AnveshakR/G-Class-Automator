@@ -51,17 +51,23 @@ def openclass(link):
     except:
         pass
 
-    wait.until(EC.visibility_of_element_located(((By.PARTIAL_LINK_TEXT, 'meet'))))
-
-    elems = driver.find_elements_by_xpath("//a[@href]")
-    links = []
-    for elem in elems:
-        links.append(elem.get_attribute("href"))
     i = ""
-    for i in links:
-        if i.find("meet") != -1:
-            break
-    
+
+    try:
+        wait.until(EC.visibility_of_element_located(((By.XPATH, '//*[@guidedhelpid ="meetJoinButton"]'))))
+        meetJoinButton = driver.find_element_by_xpath('//*[@guidedhelpid ="meetJoinButton"]')
+        i = meetJoinButton.find_element_by_css_selector('a').get_attribute('href')
+
+    except:
+        wait.until(EC.visibility_of_element_located(((By.PARTIAL_LINK_TEXT, 'https://'))))
+        elems = driver.find_elements_by_xpath("//a[@href]")
+        links = []
+        for elem in elems:
+            links.append(elem.get_attribute("href"))
+
+        for i in links:
+            if i.find("meet") != -1 or i.find("zoom") != -1:
+                break
     driver.execute_script("window.open('{}');".format(i))
 
     p = driver.current_window_handle
