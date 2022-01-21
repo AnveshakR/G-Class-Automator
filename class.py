@@ -15,6 +15,7 @@ chrome_path = r"C:\Users\anves\Documents\chromedriver\chromedriver.exe"
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-tt',default=False, action='store_true', help="Displays timetable")
+parser.add_argument('-c', type=str, default=False, help="Open particular class")
 args = parser.parse_args()
 
 def openclass(link):
@@ -87,54 +88,63 @@ def openclass(link):
 
     return driver
 
-if args.tt:
-    df = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
+if args.tt or args.c != False:
+    if args.tt:
+        df = pandas.read_excel(r"timetable.xlsx", sheet_name="Sheet1")
 
-    df = df.iloc[:,0:6]
+        df = df.iloc[:,0:6]
 
-    times = df["Lecture start time"]
-    times = [int(str(i).replace(':','')) for i in times]
+        times = df["Lecture start time"]
+        times = [int(str(i).replace(':','')) for i in times]
 
-    now = datetime.now()
-    day = now.strftime("%A")
-    hrs = int(now.strftime("%H%M%S"))
+        now = datetime.now()
+        day = now.strftime("%A")
+        hrs = int(now.strftime("%H%M%S"))
 
-    def highlight_cols(x):
-        
-        arr = x.columns.tolist()
-
-        df = x.copy()
-        
-        df.loc[:, :] = 'background-color: lightgreen; border: 2px solid black'
-
-        if day not in arr:
-            return df
-
-        df[day] = 'background-color: green; border: 2px solid black'
-
-        try:    
-            for j in range(len(times)):
-                if hrs < times[j] and df[day][j-1]:
-                    df[arr[0]][j-1] = 'background-color: cyan; border: 2px solid black'
-
-                    if x[day][j-1] != '':
-                        df[day][j-1] = 'background-color: cyan; border: 2px solid black'
-
-                    break
+        def highlight_cols(x):
             
+            arr = x.columns.tolist()
 
-        except:
-            pass
+            df = x.copy()
+            
+            df.loc[:, :] = 'background-color: lightgreen; border: 2px solid black'
+
+            if day not in arr:
+                return df
+
+            df[day] = 'background-color: green; border: 2px solid black'
+
+            try:    
+                for j in range(len(times)):
+                    if hrs < times[j] and df[day][j-1]:
+                        df[arr[0]][j-1] = 'background-color: cyan; border: 2px solid black'
+
+                        if x[day][j-1] != '':
+                            df[day][j-1] = 'background-color: cyan; border: 2px solid black'
+
+                        break
+                
+
+            except:
+                pass
+            
+            return df 
+
+        df.fillna("", inplace=True) 
         
-        return df 
+        dfi.export(df.style.apply(highlight_cols, axis = None), "tt.png")
 
-    df.fillna("", inplace=True) 
+        Image.open('tt.png').show()
+
+        os.remove("tt.png")
     
-    dfi.export(df.style.apply(highlight_cols, axis = None), "tt.png")
-
-    Image.open('tt.png').show()
-
-    os.remove("tt.png")
+    elif args.c != False:
+        df = pandas.read_excel(r"timetable.xlsx", sheet_name="Sheet1")
+        df.dropna(axis=1, how="all", inplace=True)
+        subjlist = df["Subject Abbreviation"].to_numpy()
+        for i in range(len(subjlist)):
+            if (args.c).upper() == subjlist[i].upper():
+                openclass(df["Classroom Link"][i])
 
 else:
     df  = pandas.read_excel("timetable.xlsx", sheet_name="Sheet1")
