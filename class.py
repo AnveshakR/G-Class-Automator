@@ -10,8 +10,24 @@ import os
 import pandas
 import numpy as np
 import dataframe_image as dfi
+import shutil
+import urllib.request
 
-chrome_path = r"C:\Users\anves\Documents\chromedriver\chromedriver.exe"
+chromedriver_url = 'https://chromedriver.storage.googleapis.com/{}/chromedriver_win32.zip'
+
+chrome_version = open(os.environ['USERPROFILE']+r"\AppData\Local\Google\Chrome\User Data\Last Version",'r').read()
+chromedriver_path = os.environ['USERPROFILE']+r"\Documents\GClassAutomatorFiles"
+
+if not os.path.exists(chromedriver_path):
+    os.makedirs(chromedriver_path)
+
+if (not(all(x in os.listdir(chromedriver_path) for x in ['chromedriver.exe','driververs'])) or open(chromedriver_path+"\driververs").read() != chrome_version):
+    print("Chromedriver not found, downloading now.")
+    urllib.request.urlretrieve(chromedriver_url.format(chrome_version), chromedriver_path+r"\chromedriver.zip")
+    shutil.unpack_archive(chromedriver_path+r"\chromedriver.zip", chromedriver_path)
+    os.remove(chromedriver_path+r"\chromedriver.zip")
+    with open(chromedriver_path+r"\driververs",'w') as f:
+        f.write(chrome_version)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-tt',default=False, action='store_true', help="Displays timetable")
@@ -31,7 +47,7 @@ def openclass(link):
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_experimental_option("detach", True)
     
-    driver = webdriver.Chrome(chrome_path, options=options)
+    driver = webdriver.Chrome(chromedriver_path+r"\chromedriver.exe", options=options)
     driver.get(link)
     wait = WebDriverWait(driver,10)
     try:
